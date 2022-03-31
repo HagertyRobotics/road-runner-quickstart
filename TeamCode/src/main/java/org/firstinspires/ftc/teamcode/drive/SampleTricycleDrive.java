@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.drive;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -21,8 +23,10 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
@@ -50,13 +54,19 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
  * Simple tank drive hardware implementation for REV hardware.
  */
 @Config
-public class SampleTankDrive extends TankDrive {
-    public static PIDCoefficients AXIAL_PID = new PIDCoefficients(0, 0, 0);
-    public static PIDCoefficients CROSS_TRACK_PID = new PIDCoefficients(0, 0, 0);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
+public class SampleTricycleDrive extends TricycleDrive {
+
+    Servo turnServo;
+    private static final double CENTER_DISTANCE = 7.700905;
+    static final double SERVO_TICKS_PER_ENCODER = 0.00026469;
+
+    public static PIDCoefficients AXIAL_PID = new PIDCoefficients(1, 0, 0);
+    public static PIDCoefficients CROSS_TRACK_PID = new PIDCoefficients(0.15, 0, 0);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(3, 0.01, 0.001);
 
     public static double VX_WEIGHT = 1;
     public static double OMEGA_WEIGHT = 1;
+    public static double SERVO_CENTER = .455;
 
     private TrajectorySequenceRunner trajectorySequenceRunner;
 
@@ -70,7 +80,7 @@ public class SampleTankDrive extends TankDrive {
 
     private VoltageSensor batteryVoltageSensor;
 
-    public SampleTankDrive(HardwareMap hardwareMap) {
+    public SampleTricycleDrive(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH);
 
         follower = new TankPIDVAFollower(AXIAL_PID, CROSS_TRACK_PID,
@@ -113,12 +123,15 @@ public class SampleTankDrive extends TankDrive {
         // BNO055IMUUtil.remapZAxis(imu, AxisDirection.NEG_Y);
 
         // add/remove motors depending on your robot (e.g., 6WD)
-        DcMotorEx leftFront = hardwareMap.get(DcMotorEx.class, "left_wheel");
-        DcMotorEx rightFront = hardwareMap.get(DcMotorEx.class, "right_wheel");
+        DcMotorEx leftMotor = hardwareMap.get(DcMotorEx.class, "left_wheel");
+        DcMotorEx rightMotor = hardwareMap.get(DcMotorEx.class, "right_wheel");
+        rightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        turnServo = hardwareMap.get(Servo.class, "steering_wheel");
+        turnServo.setPosition(SERVO_CENTER);
 
-        motors = Arrays.asList(leftFront, rightFront);
-        leftMotors = Arrays.asList(leftFront);
-        rightMotors = Arrays.asList(rightFront);
+        motors = Arrays.asList(leftMotor, rightMotor);
+        leftMotors = Arrays.asList(leftMotor);
+        rightMotors = Arrays.asList(rightMotor);
 
         for (DcMotorEx motor : motors) {
             MotorConfigurationType motorConfigurationType = motor.getMotorType().clone();
@@ -318,4 +331,53 @@ public class SampleTankDrive extends TankDrive {
     public static TrajectoryAccelerationConstraint getAccelerationConstraint(double maxAccel) {
         return new ProfileAccelerationConstraint(maxAccel);
     }
+
+    public void arcadeDrive(double drivePower, double turnAngle){
+        //turnAngle = TrcUtil.clipRange(turnAngle);
+        //servo turns 180 degrees when given 0-1
+        //given: 90 degrees output: 1.0
+        //given: 0 output: 0.5
+        //given: -90 degrees output: 0.0
+        turnAngle = clipRange(turnAngle, -45, 45); // max for servo - (-67 to 67 deg)
+        //drivePower = TrcUtil.clipRange(drivePower);
+        drivePower = clipMotorOutput(drivePower);
+
+        double outer_speed = drivePower * (1 + (8.423229/(2 * (CENTER_DISTANCE * Math.tan(Math.PI/2 - Math.abs(Math.toRadians(turnAngle)))))));
+        double inner_speed = drivePower * (1 - (8.423229/(2 * (CENTER_DISTANCE * Math.tan(Math.PI/2 - Math.abs(Math.toRadians(turnAngle)))))));
+
+        double servo_power = ((8192/360) * turnAngle * 1.5 * SERVO_TICKS_PER_ENCODER) + SERVO_CENTER;
+        turnServo.setPosition(servo_power);
+
+        // compensate for differential
+        //Log.i("turn angle: ", "" + turnAngle);
+        if(turnAngle > 0) {
+            motors.get(0).setPower(outer_speed);
+            motors.get(1).setPower(inner_speed);
+        }
+        else if (turnAngle < 0){
+            motors.get(0).setPower(inner_speed);
+            motors.get(1).setPower(outer_speed);
+        }
+        else if(turnAngle == 0){
+            motors.get(0).setPower(inner_speed);
+            motors.get(1).setPower(outer_speed);
+        }
+    }
+
+    public double getSteeringAngle() {
+        return 0.0;
+    }
+
+    public static double clipRange(double value, double lowLimit, double highLimit)
+    {
+        return Math.min(Math.max(value, lowLimit), highLimit);
+    }   //clipRange
+
+    protected double clipMotorOutput(double output)
+    {
+        final String funcName = "clipMotorOutput";
+        double motorOutput = clipRange(output, -1.0, 1.0);
+
+        return motorOutput;
+    }   //clipMotorOutput
 }
