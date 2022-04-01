@@ -42,7 +42,6 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MOTOR_VELO_PID
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.encoderTicksToInches;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
 
@@ -71,7 +70,7 @@ public class SampleTankDrive extends TankDrive {
     private VoltageSensor batteryVoltageSensor;
 
     public SampleTankDrive(HardwareMap hardwareMap) {
-        super(kV, kA, kStatic, TRACK_WIDTH);
+        super(kV, DriveConstants.kA, kStatic, TRACK_WIDTH);
 
         follower = new TankPIDVAFollower(AXIAL_PID, CROSS_TRACK_PID,
                 new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);

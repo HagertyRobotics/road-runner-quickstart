@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.drive.DriveSignal;
-import com.acmerobotics.roadrunner.drive.TankDrive;
 import com.acmerobotics.roadrunner.followers.TankPIDVAFollower;
 import com.acmerobotics.roadrunner.followers.TrajectoryFollower;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
@@ -46,7 +45,6 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MOTOR_VELO_PID
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.encoderTicksToInches;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
 
@@ -81,7 +79,7 @@ public class SampleTricycleDrive extends TricycleDrive {
     private VoltageSensor batteryVoltageSensor;
 
     public SampleTricycleDrive(HardwareMap hardwareMap) {
-        super(kV, kA, kStatic, TRACK_WIDTH);
+        super(kV, DriveConstants.kA, kStatic, TRACK_WIDTH);
 
         follower = new TankPIDVAFollower(AXIAL_PID, CROSS_TRACK_PID,
                 new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);
@@ -338,7 +336,8 @@ public class SampleTricycleDrive extends TricycleDrive {
         //given: 90 degrees output: 1.0
         //given: 0 output: 0.5
         //given: -90 degrees output: 0.0
-        turnAngle = clipRange(turnAngle, -45, 45); // max for servo - (-67 to 67 deg)
+        turnAngle = clipRange(Math.toDegrees(turnAngle), -45, 45); // max for servo - (-67 to 67 deg)
+        Log.i("turn angle: ", "" + turnAngle);
         //drivePower = TrcUtil.clipRange(drivePower);
         drivePower = clipMotorOutput(drivePower);
 
@@ -346,6 +345,7 @@ public class SampleTricycleDrive extends TricycleDrive {
         double inner_speed = drivePower * (1 - (8.423229/(2 * (CENTER_DISTANCE * Math.tan(Math.PI/2 - Math.abs(Math.toRadians(turnAngle)))))));
 
         double servo_power = ((8192/360) * turnAngle * 1.5 * SERVO_TICKS_PER_ENCODER) + SERVO_CENTER;
+//        Log.i("servo_power: ", servo_power + "");
         turnServo.setPosition(servo_power);
 
         // compensate for differential
