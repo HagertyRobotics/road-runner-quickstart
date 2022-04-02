@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.drive.DriveSignal;
+import com.acmerobotics.roadrunner.followers.RamseteFollower;
 import com.acmerobotics.roadrunner.followers.TankPIDVAFollower;
 import com.acmerobotics.roadrunner.followers.TrajectoryFollower;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
@@ -65,13 +66,15 @@ public class SampleTricycleDrive extends TricycleDrive {
     public static double VX_WEIGHT = 1;
     public static double OMEGA_WEIGHT = 1;
     public static double SERVO_CENTER = .455;
+    public static double RAMSETE_B = .015;
+    public static double RAMSETE_ZETA = .9;
 
     private TrajectorySequenceRunner trajectorySequenceRunner;
 
     private static final TrajectoryVelocityConstraint VEL_CONSTRAINT = getVelocityConstraint(MAX_VEL, MAX_ANG_VEL, TRACK_WIDTH);
     private static final TrajectoryAccelerationConstraint accelConstraint = getAccelerationConstraint(MAX_ACCEL);
 
-    private TrajectoryFollower follower;
+    private RamseteFollower follower;
 
     private List<DcMotorEx> motors, leftMotors, rightMotors;
     private BNO055IMU imu;
@@ -81,9 +84,10 @@ public class SampleTricycleDrive extends TricycleDrive {
     public SampleTricycleDrive(HardwareMap hardwareMap) {
         super(kV, DriveConstants.kA, kStatic, TRACK_WIDTH);
 
-        follower = new TankPIDVAFollower(AXIAL_PID, CROSS_TRACK_PID,
-                new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);
+//        follower = new TankPIDVAFollower(AXIAL_PID, CROSS_TRACK_PID,
+//                new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);
 
+        follower = new RamseteFollower(RAMSETE_B, RAMSETE_ZETA, new Pose2d(1, 1, Math.toRadians(3.0)), 0.2);
         LynxModuleUtil.ensureMinimumFirmwareVersion(hardwareMap);
 
         batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
