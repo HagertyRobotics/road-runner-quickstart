@@ -59,14 +59,14 @@ public class SampleTricycleDrive extends TricycleDrive {
     private static final double CENTER_DISTANCE = 7.700905;
     static final double SERVO_TICKS_PER_ENCODER = 0.00026469;
 
-    public static PIDCoefficients AXIAL_PID = new PIDCoefficients(1, 0, 0);
+    public static PIDCoefficients AXIAL_PID = new PIDCoefficients(1.5, 0, 0);
     public static PIDCoefficients CROSS_TRACK_PID = new PIDCoefficients(0.15, 0, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(3, 0.01, 0.001);
 
     public static double VX_WEIGHT = 1;
     public static double OMEGA_WEIGHT = 1;
     public static double SERVO_CENTER = .455;
-    public static double RAMSETE_B = .015;
+    public static double RAMSETE_B = 0.01;
     public static double RAMSETE_ZETA = .9;
 
     private TrajectorySequenceRunner trajectorySequenceRunner;

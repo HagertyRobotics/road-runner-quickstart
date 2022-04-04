@@ -17,14 +17,17 @@ public class SplineTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         SampleTricycleDrive drive = new SampleTricycleDrive(hardwareMap);
-        drive.setPoseEstimate(new Pose2d(0,0,0));
-        Trajectory forward = drive.trajectoryBuilder(new Pose2d(0,0,0), false)
-                .splineTo(new Vector2d(30, 30), 0)
-                .splineTo(new Vector2d(70,0),0)
-                .forward(10)
+        drive.setPoseEstimate(new Pose2d(42, 65, Math.toRadians(0)));
+        Trajectory backward = drive.trajectoryBuilder(new Pose2d(42, 65, 0), true)
+                .back(17)
+                .splineTo(new Vector2d(-10, 35), Math.toRadians(60) - Math.PI)
+                .back(2)
                 .build();
-        Trajectory backward = drive.trajectoryBuilder(forward.end())
-                .back(65)
+
+        Trajectory forward = drive.trajectoryBuilder(backward.end(),
+                false)
+                .splineTo(new Vector2d(20, 65), 0)
+                .splineTo(new Vector2d(42,65),0)
                 .build();
 
         waitForStart();
@@ -32,10 +35,10 @@ public class SplineTest extends LinearOpMode {
         if (isStopRequested()) return;
 
         while (opModeIsActive()){
-            drive.setPoseEstimate(new Pose2d());
-            drive.followTrajectory(forward);
-            sleep(2000);
+//            drive.setPoseEstimate(new Pose2d());
             drive.followTrajectory(backward);
+            sleep(2000);
+            drive.followTrajectory(forward);
 
         }
 

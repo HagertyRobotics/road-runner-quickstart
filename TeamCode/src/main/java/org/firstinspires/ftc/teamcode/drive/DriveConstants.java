@@ -42,7 +42,7 @@ public class DriveConstants {
      * angular distances although most angular parameters are wrapped in Math.toRadians() for
      * convenience. Make sure to exclude any gear ratio included in MOTOR_CONFIG from GEAR_RATIO.
      */
-    public static double WHEEL_RADIUS = 1.7715; // in
+    public static double WHEEL_RADIUS = 1.87755102041; // in
     public static double GEAR_RATIO = 1.0/20.0; // output (wheel) speed / input (motor) speed
     public static double TRACK_WIDTH = 8.423229; // in
 
@@ -52,8 +52,8 @@ public class DriveConstants {
      * motor encoders or have elected not to use them for velocity control, these values should be
      * empirically tuned.
      */
-    public static double kV = 0.018;
-    public static double kA = 0.0035;
+    public static double kV = 0.02;
+    public static double kA = 0;
     public static double kStatic = 0;
 
 
