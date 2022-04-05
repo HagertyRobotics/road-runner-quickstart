@@ -66,8 +66,8 @@ public class SampleTricycleDrive extends TricycleDrive {
     public static double VX_WEIGHT = 1;
     public static double OMEGA_WEIGHT = 1;
     public static double SERVO_CENTER = .455;
-    public static double RAMSETE_B = 0.01;
-    public static double RAMSETE_ZETA = .9;
+    public static double RAMSETE_B = 0.004;
+    public static double RAMSETE_ZETA = .1;
 
     private TrajectorySequenceRunner trajectorySequenceRunner;
 
